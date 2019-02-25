@@ -38,7 +38,7 @@ exports.resolvers = {
       email,
       password,
     }, { User }) => {
-      const user = await User.findOne({ $and: [{ username }, { email }]});
+      const user = await User.findOne({ $or: [{ username }, { email }]});
       if (user) {
         throw new Error('User already exists!');
       }
@@ -50,6 +50,20 @@ exports.resolvers = {
       }).save();
 
       return { token: createToken(newUser, process.env.SECRET, '1h') };
+    },
+
+    signinUser: async (root, {
+      username,
+      password,
+    }, { User }) => {
+      let user;
+      try {
+        user = await User.login( username, password );
+      } catch(err) {
+        throw(err);
+      }
+
+      return { token: createToken(user, process.env.SECRET, '1h') };
     }
   }
 };
